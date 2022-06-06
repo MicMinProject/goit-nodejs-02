@@ -13,23 +13,19 @@ const add = async (req, res, next) => {
     .findUser({ email: validated.value.email })
     .lean();
   if (checkEmail && body) {
-    return res.json({ message: "Email in use", status: "failed", code: 409 });
+    return res.status(409).json({ message: "Email in use" });
   }
   if (validated.error) {
-    return res.json({
-      message: validated.error.message,
-      status: "failed",
-      code: 400,
+    return res.status(400).json({
+      message: validated.error.message
     });
   }
   try {
     const newUser = new User({ email });
     await newUser.setPassword(password);
     await newUser.save();
-    res.json({
-      user: { email: newUser.email, subscription: "starter" },
-      status: "success",
-      code: 201,
+    res.status(201).json({
+      user: { email: newUser.email, subscription: "starter" }
     });
   } catch (err) {
     next(err);
@@ -41,19 +37,15 @@ const get = async (req, res, next) => {
   const { password } = body;
   const validated = patternUserAdd.validate(body);
   if (validated.error) {
-    return res.json({
-      message: validated.error.message,
-      status: "failed",
-      code: 400,
+    return res.status(400).json({
+      message: validated.error.message
     });
   }
   const checkEmail = await service.findUser({ email: validated.value.email });
   const isCorrectPassword = await checkEmail.validatePassword(password);
   if (!checkEmail || !isCorrectPassword) {
-    return res.json({
-      message: "Wrong credentials",
-      status: "failed",
-      code: 400,
+    return res.status(400).json({
+      message: "Wrong credentials"
     });
   }
   try {
@@ -61,11 +53,9 @@ const get = async (req, res, next) => {
     const token = jwt.sign(payload, SECRET, { expiresIn: "4h" });
     checkEmail.token = token;
     checkEmail.save();
-    res.json({
+    res.status(200).json({
       token: token,
-      user: { email: checkEmail.email, subscription: "starter" },
-      status: "success",
-      code: 200,
+      user: { email: checkEmail.email, subscription: "starter" }
     });
   } catch (err) {
     next(err);
@@ -77,7 +67,7 @@ const logout = async (req, res, next) => {
     const delToken = await service.findUser({ _id: req.user.id });
     delToken.token = null;
     delToken.save();
-    res.json({ status: "success", code: 204 });
+    res.status(204).json({message: "Logged out"});
   } catch (err) {
     next(err);
   }
@@ -88,7 +78,7 @@ const check = async (req, res, next) => {
   try{
     const user = await service.findUser({_id: id});
     if(user)
-    {res.json({data: {email, subscription}, status: "success", code: 200})}
+    {res.status(200).json({ data: {email, subscription} })}
   } catch(err) {next(err)}
 };
 
@@ -96,12 +86,12 @@ const subs = async (req, res, next) => {
   const {_id} = req.user;
   const body = req.body;
   const validated = patternUserPatch.validate(body);
-  if(validated.error) {return res.json({message: validated.error.message, status: "failed", code: 400})}
+  if(validated.error) {return res.status(400).json({message: validated.error.message})}
   try{
   const user = await service.findUser({_id});
   user.subscription = body.subscription;
   user.save();
-  res.json({message: `Subscription has changed for ${body.subscription}`, status: "success", code: 201})
+  res.status(201).json({message: `Subscription has changed for ${body.subscription}`})
   } catch(err) {next(err)}
 };
 

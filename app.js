@@ -1,6 +1,7 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
+const authMiddleware = require('./middlewares/jwt')
 
 const contactsRouter = require("./routes/api/contacts");
 const usersRouter = require('./routes/api/users');
@@ -15,7 +16,7 @@ app.use(express.json());
 
 require('./config/passport');
 
-app.use("/api/contacts", contactsRouter);
+app.use("/api/contacts", authMiddleware, contactsRouter);
 app.use("/api/users", usersRouter);
 
 app.use((req, res) => {

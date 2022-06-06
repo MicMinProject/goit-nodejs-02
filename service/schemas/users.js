@@ -27,7 +27,7 @@ users.methods.setPassword = async function(password) {
   this.password = await bcrypt.hash(password, bcrypt.genSaltSync(12))
 };
 
-users.methods.validatePassword = async function(password) {
+users.methods.validatePassword = function(password) {
   return bcrypt.compare(password, this.password)
 }
 
