@@ -1,18 +1,32 @@
-const {Contact} = require('./schemas/contacts')
-const {User} = require('./schemas/users')
+const { Contact } = require("./schemas/contacts");
+const { User } = require("./schemas/users");
 
 // Contacts
-const getAllContacts = (id) => Contact.find({owner: id}).lean()
 
-const getContactById = ({contactId, _id}) => Contact.findById({_id: contactId, owner: _id})
+const getAllContacts = ({ _id, favorite }) => {
+  if (favorite) {
+    if (favorite === "false") {
+      return Contact.find({ owner: _id, favorite: false });
+    }
+    return Contact.find({ owner: _id, favorite: true });
+  } else {
+    return Contact.find({ owner: _id });
+  }
+};
 
-const addContact = (body) => Contact.insertMany(body, {new: true})
+const getContactById = ({ contactId, _id }) =>
+  Contact.findById({ _id: contactId, owner: _id });
 
-const removeContact = ({contactId, _id}) => Contact.findOneAndDelete({_id: contactId, owner: _id})
+const addContact = (body) => Contact.insertMany(body, { new: true });
 
-const updateContact = ({contactId, _id}, body) => Contact.findOneAndUpdate({_id: contactId, owner: _id}, body, {new: true})
+const removeContact = ({ contactId, _id }) =>
+  Contact.findOneAndDelete({ _id: contactId, owner: _id });
 
-const updateFavorite = ({contactId, _id}, body) => Contact.findOneAndUpdate({_id: contactId, owner: _id}, body, {new: true})
+const updateContact = ({ contactId, _id }, body) =>
+  Contact.findOneAndUpdate({ _id: contactId, owner: _id }, body, { new: true });
+
+const updateFavorite = ({ contactId, _id }, body) =>
+  Contact.findOneAndUpdate({ _id: contactId, owner: _id }, body, { new: true });
 
 // Users
 
@@ -25,5 +39,5 @@ module.exports = {
   removeContact,
   updateContact,
   updateFavorite,
-  findUser
-}
+  findUser,
+};
