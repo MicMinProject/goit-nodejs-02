@@ -22,7 +22,7 @@ const add = async (req, res, next) => {
   }
   if (validated.error) {
     return res.status(400).json({
-      message: validated.error.message
+      message: validated.error.message,
     });
   }
   try {
@@ -37,7 +37,7 @@ const add = async (req, res, next) => {
     await newUser.setPassword(password);
     await newUser.save();
     res.status(201).json({
-      user: { email: newUser.email, subscription: "starter" }
+      user: { email: newUser.email, subscription: "starter" },
     });
   } catch (err) {
     next(err);
@@ -50,14 +50,14 @@ const get = async (req, res, next) => {
   const validated = patternUserAdd.validate(body);
   if (validated.error) {
     return res.status(400).json({
-      message: validated.error.message
+      message: validated.error.message,
     });
   }
   const checkEmail = await service.findUser({ email: validated.value.email });
   const isCorrectPassword = await checkEmail.validatePassword(password);
   if (!checkEmail || !isCorrectPassword) {
     return res.status(400).json({
-      message: "Wrong credentials"
+      message: "Wrong credentials",
     });
   }
   try {
@@ -67,7 +67,7 @@ const get = async (req, res, next) => {
     checkEmail.save();
     res.status(200).json({
       token: token,
-      user: { email: checkEmail.email, subscription: "starter" }
+      user: { email: checkEmail.email, subscription: "starter" },
     });
   } catch (err) {
     next(err);
@@ -79,19 +79,22 @@ const logout = async (req, res, next) => {
     const delToken = await service.findUser({ _id: req.user.id });
     delToken.token = null;
     delToken.save();
-    res.status(204).json({message: "Logged out"});
+    res.status(204).json({ message: "Logged out" });
   } catch (err) {
     next(err);
   }
 };
 
 const check = async (req, res, next) => {
-  const {email, subscription, id} = req.user;
-  try{
-    const user = await service.findUser({_id: id});
-    if(user)
-    {res.status(200).json({ data: {email, subscription} })}
-  } catch(err) {next(err)}
+  const { email, subscription, id } = req.user;
+  try {
+    const user = await service.findUser({ _id: id });
+    if (user) {
+      res.status(200).json({ data: { email, subscription } });
+    }
+  } catch (err) {
+    next(err);
+  }
 };
 
 const subs = async (req, res, next) => {
@@ -99,20 +102,16 @@ const subs = async (req, res, next) => {
   const body = req.body;
   const validated = patternUserPatch.validate(body);
   if (validated.error) {
-    return res.json({
+    return res.status(400).json({
       message: validated.error.message,
-      status: "failed",
-      code: 400,
     });
   }
   try {
     const user = await service.findUser({ _id });
     user.subscription = body.subscription;
     user.save();
-    res.json({
+    res.status(201).json({
       message: `Subscription has changed for ${body.subscription}`,
-      status: "success",
-      code: 201,
     });
   } catch (err) {
     next(err);
@@ -121,14 +120,12 @@ const subs = async (req, res, next) => {
 
 const setAvatar = async (req, res, next) => {
   if (!req.user) {
-    return res.json({ message: "Unauthorized", status: "failed", code: 401 });
+    return res.status(401).json({ message: "Unauthorized" });
   }
   const { _id } = req.user;
   if (!req.file) {
-    return res.json({
+    return res.status(400).json({
       message: "This is not a photo",
-      status: "failed",
-      code: 400,
     });
   }
   const { path: temporaryName } = req.file;
@@ -138,25 +135,21 @@ const setAvatar = async (req, res, next) => {
     const isValidImage = await isImage(temporaryName);
     if (!isValidImage) {
       await fs.unlink(temporaryName);
-      return res.json({
+      return res.status(400).json({
         message: "This is not a proper image",
-        status: "failed",
-        code: 400,
       });
     }
     await fs.rename(temporaryName, fileName);
   } catch (err) {
     await fs.unlink(temporaryName);
-    return res.json({ message: err });
+    return res.status(400).json({ message: err });
   }
 
   const user = await service.findUser({ _id });
   user.avatarURL = fileName;
   user.save();
-  return res.json({
+  return res.status(200).json({
     avatarURL: fileName,
-    status: "success",
-    code: 200,
   });
 };
 
