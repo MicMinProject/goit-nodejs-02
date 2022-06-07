@@ -2,7 +2,7 @@ const { patternUserAdd, patternUserPatch } = require("../joi");
 const service = require("../service/index");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { SECRET, INTERIA_USERNAME } = process.env;
+const { SECRET, INTERIA_USERNAME, VERIFICATION_ROUTE } = process.env;
 const { User } = require("../service/schemas/users");
 const gravatar = require("gravatar");
 const path = require("path");
@@ -41,7 +41,7 @@ const add = async (req, res, next) => {
 
     // SENDING VERIFY EMAIL
 
-    const linkToVerification = `http://localhost:3000/api/users/verify/${newUser.verificationToken}`;
+    const linkToVerification = `${VERIFICATION_ROUTE}${newUser.verificationToken}`;
 
     const emailOptions = {
       from: INTERIA_USERNAME,
@@ -49,8 +49,11 @@ const add = async (req, res, next) => {
       subject: "Verification email",
       html: `<a href=${linkToVerification}>Verification link</a>`,
     };
-
-    await client.sendMail(emailOptions);
+    try {
+      await client.sendMail(emailOptions);
+    } catch (err) {
+      next(err);
+    }
 
     res.status(201).json({
       user: { email: newUser.email, subscription: "starter" },
@@ -198,16 +201,16 @@ const verifyAgain = async (req, res, next) => {
   }
   const user = await User.find({ email }).lean();
   if (user.verificationToken) {
-    const linkToVerification = `http://localhost:3000/api/users/verify/${user.verificationToken}`;
-    try {
-      const emailOptions = {
-        from: INTERIA_USERNAME,
-        to: INTERIA_USERNAME,
-        subject: "Verification email",
-        html: `<a href=${linkToVerification}>Verification link</a>`,
-      };
+    const linkToVerification = `${VERIFICATION_ROUTE}${user.verificationToken}`;
+    const emailOptions = {
+      from: INTERIA_USERNAME,
+      to: INTERIA_USERNAME,
+      subject: "Verification email",
+      html: `<a href=${linkToVerification}>Verification link</a>`,
+    };
 
-      await client.sendMail(emailOptions)
+    try {
+      await client.sendMail(emailOptions);
 
       res.status(200).json({
         message: `Verification email resent to ${email}`,
@@ -216,7 +219,7 @@ const verifyAgain = async (req, res, next) => {
       next(err);
     }
   }
-  return res.status(400).json({message: "Email have already been verified"})
+  return res.status(400).json({ message: "Email have already been verified" });
 };
 
 module.exports = {

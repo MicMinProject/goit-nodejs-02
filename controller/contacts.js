@@ -118,10 +118,6 @@ const updateContact = async (req, res, next) => {
     res.status(400).json({ message: validated.error.message });
   }
   const { name, email, phone } = validated.value;
-
-  if (!name && !email && !phone) {
-    res.status(400).json({ message: "missing fields" });
-  } else {
     try {
       const contact = await service.updateContact(
         { contactId, _id },
@@ -135,7 +131,7 @@ const updateContact = async (req, res, next) => {
     } catch (err) {
       next(res.status(404).json({ message: "Not found" }));
     }
-  }
+  
 };
 
 const updateFavorite = async (req, res, next) => {
