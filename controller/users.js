@@ -219,7 +219,7 @@ const verifyAgain = async (req, res, next) => {
       next(err);
     }
   }
-  return res.status(400).json({ message: "Email have already been verified" });
+  return res.status(400).json({ message: "Email has already been verified" });
 };
 
 module.exports = {
