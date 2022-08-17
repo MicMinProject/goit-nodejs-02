@@ -45,7 +45,7 @@ const add = async (req, res, next) => {
 
     const emailOptions = {
       from: INTERIA_USERNAME,
-      to: INTERIA_USERNAME,
+      to: email,
       subject: "Verification email",
       html: `<a href=${linkToVerification}>Verification link</a>`,
     };
@@ -204,7 +204,7 @@ const verifyAgain = async (req, res, next) => {
     const linkToVerification = `${VERIFICATION_ROUTE}${user.verificationToken}`;
     const emailOptions = {
       from: INTERIA_USERNAME,
-      to: INTERIA_USERNAME,
+      to: email,
       subject: "Verification email",
       html: `<a href=${linkToVerification}>Verification link</a>`,
     };
