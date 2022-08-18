@@ -20,10 +20,10 @@ const authMiddleware = require("../../middlewares/jwt");
  *        properties:
  *           password:
  *             type: string
- *             definition: User's password
+ *             description: User's password
  *           email:
  *             type: string,
- *             definition: User's email
+ *             description: User's email
  *             unique: true
  *        example:
  *          password: DFw4323r4fwwttwre4t24t
@@ -36,7 +36,7 @@ const authMiddleware = require("../../middlewares/jwt");
  *  post:
  *    tags:
  *    - users
- *    definition: Sign up a new user
+ *    description: Sign up a new user
  *    security: []
  *    requestBody:
  *      description: Enter new email and password
@@ -62,7 +62,7 @@ router.post("/signup", usersController.add);
  *  post:
  *    tags:
  *    - users
- *    definition: Log in user
+ *    description: Log in user
  *    security:
  *      - BearerAuth: []
  *    requestBody:
@@ -88,7 +88,7 @@ router.post("/login", usersController.get);
  *  post:
  *    tags:
  *    - users
- *    definition: Log out user
+ *    description: Log out user
  *    security:
  *    - BearerAuth: []
  *    responses:
@@ -106,7 +106,7 @@ router.post("/logout", authMiddleware, usersController.logout);
  *  post:
  *    tags:
  *    - users
- *    definition: Resent verification email
+ *    description: Resend verification email
  *    security:
  *      - BearerAuth: []
  *    requestBody:
@@ -121,7 +121,7 @@ router.post("/logout", authMiddleware, usersController.logout);
  *            properties:
  *              email:
  *                type: string
- *                definition: User's email
+ *                description: User's email
  *            example:
  *              email: john.smith@gmail.com
  *    responses:
@@ -139,7 +139,7 @@ router.post('/verify', usersController.verifyAgain)
  *  get:
  *    tags:
  *    - users
- *    definition: Check currently logged user
+ *    description: Check currently logged user
  *    security:
  *      - BearerAuth: []
  *    responses:
@@ -157,7 +157,7 @@ router.get("/current", authMiddleware, usersController.check);
  *  get:
  *    tags:
  *    - users
- *    definition: Verify email by clicking link in verification email
+ *    description: Verify email by clicking link in verification email
  *    parameters:
  *      - in: path
  *        name: verificationToken
@@ -180,7 +180,7 @@ router.get('/verify/:verificationToken', usersController.verify)
  *  patch:
  *    tags:
  *    - users
- *    definition: Change subscription
+ *    description: Change subscription
  *    security:
  *      - BearerAuth: []
  *    requestBody:
@@ -195,7 +195,7 @@ router.get('/verify/:verificationToken', usersController.verify)
  *            properties:
  *              subscription:
  *                type: string,
- *                definition: starter, pro, business
+ *                description: starter, pro, business
  *            example:
  *              subscription: pro
  *    responses:
@@ -213,7 +213,7 @@ router.patch("/", authMiddleware, usersController.subs);
  *  patch:
  *    tags:
  *    - users
- *    definition: Upload user's avatar
+ *    description: Upload user's avatar
  *    security:
  *      - BearerAuth: []
  *    consumes:
