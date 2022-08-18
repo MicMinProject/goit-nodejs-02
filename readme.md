@@ -2,5 +2,5 @@
 
 ### Check out Swagger documentation by:
 
-#### - Entering npm run start command in terminal
-#### - Copying route: /api-docs after localhost:3000 in URL tab
+#### - Entering `npm run start` &mdash; command in terminal
+#### - Copying route: `/api-docs` &mdash; after localhost:3000 in URL tab
