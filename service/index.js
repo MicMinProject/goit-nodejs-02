@@ -32,6 +32,9 @@ const updateFavorite = ({ contactId, _id }, body) =>
 
 const findUser = (body) => User.findOne(body);
 
+const saveUser = ({ verificationToken }, body) =>
+  User.findOneAndUpdate({ verificationToken }, body, { new: true });
+
 module.exports = {
   getAllContacts,
   getContactById,
@@ -40,4 +43,5 @@ module.exports = {
   updateContact,
   updateFavorite,
   findUser,
+  saveUser,
 };

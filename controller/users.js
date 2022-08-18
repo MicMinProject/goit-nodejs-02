@@ -2,13 +2,14 @@ const { patternUserAdd, patternUserPatch } = require("../joi");
 const service = require("../service/index");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { SECRET } = process.env;
+const { SECRET, INTERIA_USERNAME, VERIFICATION_ROUTE } = process.env;
 const { User } = require("../service/schemas/users");
 const gravatar = require("gravatar");
 const path = require("path");
 const fs = require("fs").promises;
 const { v4: uuidv4 } = require("uuid");
 const { isImage, storeDir } = require("../helpers");
+const { client } = require("../email/index");
 
 const add = async (req, res, next) => {
   const body = req.body;
@@ -33,11 +34,30 @@ const add = async (req, res, next) => {
         d: "identicon",
         s: "250",
       }),
+      verificationToken: uuidv4(),
     });
     await newUser.setPassword(password);
     await newUser.save();
+
+    // SENDING VERIFY EMAIL
+
+    const linkToVerification = `${VERIFICATION_ROUTE}${newUser.verificationToken}`;
+
+    const emailOptions = {
+      from: INTERIA_USERNAME,
+      to: email,
+      subject: "Verification email",
+      html: `<a href=${linkToVerification}>Verification link</a>`,
+    };
+    try {
+      await client.sendMail(emailOptions);
+    } catch (err) {
+      next(err);
+    }
+
     res.status(201).json({
       user: { email: newUser.email, subscription: "starter" },
+      message: `Verification email sent to ${email}`,
     });
   } catch (err) {
     next(err);
@@ -54,6 +74,9 @@ const get = async (req, res, next) => {
     });
   }
   const checkEmail = await service.findUser({ email: validated.value.email });
+  if (checkEmail.verificationToken) {
+    return res.status(400).json({ message: "Not verified" });
+  }
   const isCorrectPassword = await checkEmail.validatePassword(password);
   if (!checkEmail || !isCorrectPassword) {
     return res.status(400).json({
@@ -153,6 +176,52 @@ const setAvatar = async (req, res, next) => {
   });
 };
 
+const verify = async (req, res, next) => {
+  const { verificationToken } = req.params;
+  const user = await service.findUser({ verificationToken });
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  try {
+    const savedUser = await service.saveUser(
+      { verificationToken },
+      { verificationToken: null, verify: true },
+    );
+    console.log(savedUser);
+    return res.status(200).json({ message: "Verification successful" });
+  } catch (err) {
+    return res.status(400).json({ message: err });
+  }
+};
+
+const verifyAgain = async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: "missing required email field" });
+  }
+  const user = await User.find({ email }).lean();
+  if (user.verificationToken) {
+    const linkToVerification = `${VERIFICATION_ROUTE}${user.verificationToken}`;
+    const emailOptions = {
+      from: INTERIA_USERNAME,
+      to: email,
+      subject: "Verification email",
+      html: `<a href=${linkToVerification}>Verification link</a>`,
+    };
+
+    try {
+      await client.sendMail(emailOptions);
+
+      res.status(200).json({
+        message: `Verification email resent to ${email}`,
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+  return res.status(400).json({ message: "Email has already been verified" });
+};
+
 module.exports = {
   add,
   get,
@@ -160,4 +229,6 @@ module.exports = {
   check,
   subs,
   setAvatar,
+  verify,
+  verifyAgain,
 };

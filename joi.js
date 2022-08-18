@@ -10,7 +10,7 @@ const patternContactUpdate = Joi.object({
   name: Joi.string().min(2).max(30),
   email: Joi.string().email().max(50),
   phone: Joi.string().min(6).max(20)
-});
+}).or('name', 'email', 'phone');
 
 const patternFavorite = Joi.object({
   favorite: Joi.boolean().required()
